@@ -35,16 +35,14 @@ public class SearchService {
     public synchronized SearchResult getSearchResult(Integer regionId, String text) {
         List<CatalogueElastic> result = null;
         if (isNumeric(text)) {
-            Integer itemId = repoDb.findBySku(text).stream().findFirst().orElse(null);
-            if (itemId == null) {
+            Optional<Long> itemId = repoDb.findBySku(text);
+            if (itemId.isEmpty()) {
                 var catalogue = getByName(text);
                 if (catalogue.size() > 0) {
                     result = catalogue;
                 }
-            }
-            try {
+            } else {
                 result = getByItemId(itemId.toString());
-            } catch (Exception e) {
             }
         }
         if (result == null) {

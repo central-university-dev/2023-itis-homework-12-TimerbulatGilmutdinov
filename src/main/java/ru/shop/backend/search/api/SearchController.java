@@ -9,6 +9,8 @@ import ru.shop.backend.search.model.SearchResultElastic;
 import ru.shop.backend.search.repository.ItemDbRepository;
 import ru.shop.backend.search.service.SearchService;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/search")
 @RequiredArgsConstructor
@@ -20,8 +22,8 @@ public class SearchController implements SearchApi{
     }
     public ResponseEntity<SearchResultElastic> finds(String text, int regionId) {
         if (service.isNumeric(text)) {
-            Integer itemId = itemDbRepository.findBySku(text).stream().findFirst().orElse(null);
-            if (itemId == null) {
+            Optional<Long> itemId = itemDbRepository.findBySku(text);
+            if (itemId.isEmpty()) {
                 var catalogue = service.getByName(text);
                 if (catalogue.size() > 0) {
                     return ResponseEntity.ok().body(new SearchResultElastic(catalogue));
