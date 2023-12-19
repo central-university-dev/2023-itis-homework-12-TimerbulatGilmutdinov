@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import ru.shop.backend.search.model.ItemEntity;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface ItemDbRepository  extends JpaRepository<ItemEntity, Long> {
@@ -16,7 +17,7 @@ public interface ItemDbRepository  extends JpaRepository<ItemEntity, Long> {
 
     @Query(value = "" +
             "select item_id from item_sku where sku = ?", nativeQuery = true)
-    List<Integer> findBySku(String parseInt);
+    Optional<Long> findBySku(String parseInt);
 
     @Query(value = "" +
             "select i.* from item as i", nativeQuery = true)
