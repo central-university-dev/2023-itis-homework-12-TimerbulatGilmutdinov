@@ -18,33 +18,14 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @RestController
 @RequestMapping("/api/search")
-@Tag(name = "Поиск", description = "Методы поиска")
 @RequiredArgsConstructor
-public class SearchController {
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Возвращает результаты поиска для всплывающего окна",
-                content = {@Content(mediaType = "application/json",
-                        schema = @Schema(implementation = SearchResult.class))}),
-        @ApiResponse(responseCode = "400", description = "Ошибка обработки",
-                content = @Content),
-        @ApiResponse(responseCode = "404", description = "Регион не найден",
-                content = @Content)})
-    @Parameter(name = "text", description = "Поисковый запрос")
-    @GetMapping
-    public SearchResult find(@RequestParam String text, @CookieValue(name="regionId", defaultValue="1") int regionId){
+public class SearchController implements SearchApi{
+    private final ItemDbRepository itemDbRepository;
+    private final SearchService service;
+    public SearchResult find(String text, int regionId){
         return service.getSearchResult( regionId,  text);
     }
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Возвращает результаты поиска",
-                    content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = SearchResult.class))}),
-            @ApiResponse(responseCode = "400", description = "Ошибка обработки",
-                    content = @Content),
-            @ApiResponse(responseCode = "404", description = "Регион не найден",
-                    content = @Content)})
-    @Parameter(name = "text", description = "Поисковый запрос")
-    @RequestMapping(method = GET, value = "/by", produces = "application/json;charset=UTF-8")
-    public ResponseEntity finds(@RequestParam String text, @CookieValue(name="regionId", defaultValue="1") int regionId) {
+    public ResponseEntity<SearchResultElastic> finds(String text, int regionId) {
         if (service.isNumeric(text)) {
             Integer itemId = itemDbRepository.findBySku(text).stream().findFirst().orElse(null);
             if (itemId == null) {
@@ -61,6 +42,4 @@ public class SearchController {
         }
         return ResponseEntity.ok().body(new SearchResultElastic(service.getAllFull(text)));
     }
-    private final ItemDbRepository itemDbRepository;
-    private final SearchService service;
 }
