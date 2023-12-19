@@ -9,6 +9,7 @@ import ru.shop.backend.search.repository.ItemDbRepository;
 import ru.shop.backend.search.repository.ItemRepository;
 
 import javax.transaction.Transactional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -16,17 +17,13 @@ import javax.transaction.Transactional;
 public class ReindexSearchService {
     private final ItemDbRepository dbRepository;
     private final ItemRepository searchRepository;
-    @Scheduled(fixedDelay = 43200000)
+    @Scheduled(fixedDelay = 12, timeUnit = TimeUnit.HOURS)
     @Transactional
     public void reindex(){
         log.info("генерация индексов по товарам запущена");
         dbRepository.findAllInStream().parallel()
-                .map(entity -> new ItemElastic(entity))
-                .forEach(
-                item ->
-                searchRepository.save(item)
-        );
+                .map(ItemElastic::new)
+                .forEach(searchRepository::save);
         log.info("генерация индексов по товарам закончилась");
-
     }
 }
